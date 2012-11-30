@@ -1,0 +1,27 @@
+##################
+Vagrant VM Manager
+##################
+
+A thin layer to manage your vagrant virtual machine.
+
+USAGE
+=====
+
+ 1. Configure the settings.py file
+ 2. Use vm script :
+
+    $ vm download
+    $ vm start my_vm
+    $ vm stop my_vm
+
+COMMANDS
+========
+
+ - start vm_name
+ - stop vm_name
+ - download
+ - configure vm_name
+ - reconfigure vm_name
+ - delete vm_name
+ - ssh vm_name
+ - restart vm_name
