@@ -10,75 +10,124 @@ import os
 import subprocess
 import sys
 
-import settings
-
-
-def get_vm_list():
-    """Scan filesystem and return list of available VMs."""
-    vm_list = []
-    vm_dir = settings.VM_DIR
-    if os.path.isdir(vm_dir):
-        items = os.listdir(vm_dir)
-        vm_list = [os.path.basename(item) for item in items
-                   if os.path.isdir(os.path.join(vm_dir, item))]
-    return vm_list
+from vagrant_vm_manager import settings
+from vagrant_vm_manager.templates import generate_vagrantfile
 
 
 def main():
     """Parse shell args and execute action on VM."""
     # Parse shell argument
-    vm_list = get_vm_list()
+    try:
+        config_filename = settings.find_config_file(os.getcwd())
+    except settings.ConfigurationError:  # No file found.
+        config_filename = os.path.join(os.path.abspath(os.getcwd()),
+                                       'etc', 'vagrant_vm_manager.cfg')
+        print "No configuration file found. Creating a new one at %s" \
+              % config_filename
+        if not os.path.exists(os.path.dirname(config_filename)):
+            os.makedirs(os.path.dirname(config_filename))
+        with open(config_filename, 'w') as config_file:
+            vm_settings = settings.Settings()
+            settings.write_config_file(vm_settings, config_file)
+    vm_settings = settings.read_config_file(config_filename)
+    vm_list = vm_settings.vms.keys()
     action_list = ['start', 'stop', 'download', 'configure', 'reconfigure',
-                   'delete', 'ssh', 'restart']
+                   'delete', 'ssh', 'restart', 'register', 'unregister',
+                   'list']
     usage = """Usage: %%prog [options] ACTION VM.
 
 Where:
 
 * ACTION is one in (%s)
 * VM is one in (all, %s)
-    """ % (','.join(action_list), ','.join(vm_list))
+    """ % (','.join(action_list), ', '.join(vm_list))
     parser = OptionParser(usage=usage)
     (options, args) = parser.parse_args()
-    if len(args) > 2 or len(args) < 1:
-        parser.error('Bad number of arguments.')
-
-    action = args[0]
 
     try:
-        vm = args[1]
+        action = args.pop(0)
+    except IndexError:
+        parser.error('Bad number of arguments. Missing ACTION.')
+
+    try:
+        vm = args.pop(0)
     except IndexError:
         vm = None
     if not action in action_list:
         parser.error('Unknow action %s' % action)
-    if action != 'download':
+    if action == 'register':
+        if not vm:
+            parser.error('Bad number of arguments. Need a VM name.')
+        if vm in vm_list:
+            parser.error('VM %s already exists. Nothing done.' % vm)
+        if vm is 'all':
+            parser.error('"all" is not a valid VM name to register.')
+        vm_settings.vms[vm] = {}
+        with open(config_filename, 'w') as config_file:
+            settings.write_config_file(vm_settings, config_file)
+    elif action == 'unregister':
+        if not vm:
+            parser.error('Bad number of arguments. Need a VM name.')
+        if vm not in vm_list:
+            parser.error('VM %s does not exist. Nothing done.' % vm)
         if vm == 'all':
             vm_targets = vm_list
         else:
-            if vm:
-                vm_targets = [vm]
-            else:
-                sys.stderr.write('Bad number of arguments. Need a VM name.\n')
-                sys.exit(1)
+            vm_targets = [vm]
         for vm_name in vm_targets:
-            print "On VM %s" % vm_name
-            manager = VMManager(vm_name)
-            func = getattr(manager, action)
-            func()
-    else:
+            del vm_settings.vms[vm_name]
+        with open(config_filename, 'w') as config_file:
+            settings.write_config_file(vm_settings, config_file)
+    elif action == 'list':
+        print "Registered virtual machines:"
+        for vm_name in vm_list:
+            print "* %s" % vm_name
+    elif action == 'download':
         if vm and not vm in vm_list:
             vm_dir = os.path.join(settings.VM_DIR, vm)
             os.makedirs(vm_dir)
         manager = VMManager(vm)
         manager.download()
+    else:
+        if vm == 'all':
+            vm_targets = vm_list
+        else:
+            if vm:
+                if not vm in vm_list:
+                    parser.error('Unknown VM %s' % vm)
+                vm_targets = [vm]
+            else:
+                sys.stderr.write('Bad number of arguments. Need a VM name.\n')
+                sys.exit(1)
+        kwargs = {}
+        if action == 'configure':
+            for arg in args:
+                parts = arg.partition('=')
+                if not parts[0]:
+                    parser.error('Bad argument %s. Missing assignation.' % arg)
+                kwargs[parts[0]] = parts[2]
+                vm_settings.vms[vm][parts[0]] = parts[2]
+            with open(config_filename, 'w') as config_file:
+                settings.write_config_file(vm_settings, config_file)
+        for vm_name in vm_targets:
+            print "On VM %s" % vm_name
+            directory = os.path.join(vm_settings.directory, vm_name)
+            manager = VMManager(vm_name, directory)
+            manager.settings = vm_settings.default
+            manager.settings.update(vm_settings.vms[vm_name])
+            func = getattr(manager, action)
+            func(**kwargs)
 
 
 class VMManager(object):
-    def __init__(self, name):
+    """Implementation of manager class for one VM."""
+    def __init__(self, name, directory=''):
         self.name = name
-        self.base_box = settings.VM_BASE_BOX
+        self.directory = directory
+        #self.base_box = settings.get(self.name, 'base_box')
 
     def get_vm_dir(self):
-        return os.path.join(settings.VM_DIR, self.name)
+        return self.directory
 
     def start(self):
         """Start VM by name."""
@@ -100,15 +149,22 @@ class VMManager(object):
     def is_configured(self):
         return os.path.exists(self.get_vagrantfile_path())
 
-    def configure(self):
+    def configure(self, **configuration):
         """Generate Vagrantfile for VM."""
-        if settings.VM_CREATE_VAGRANT_CMD:
-            cmds = settings.VM_CREATE_VAGRANT_CMD(self.name, self.base_box,
-                                                  self.get_vagrantfile_path())
-            for cmd in cmds:
-                execute(cmd)
-        else:
-            raise NotImplementedError('You must create your Vagrantfile')
+        # Default generator. Could be configurable.
+        generator = generate_vagrantfile
+        # Default template source. Could be configurable.
+        template = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                'templates',
+                                'Vagrantfile')
+        # File output.
+        vagrantfile = os.path.join(self.get_vm_dir(), 'Vagrantfile')
+        # Context.
+        context = configuration
+        context.update(self.settings)
+        context['box_name'] = self.name
+        context['box_directory'] = self.get_vm_dir()
+        generator(template, vagrantfile, context)
 
     def reconfigure(self):
         """Re-generate Vagrantfile for VM."""
