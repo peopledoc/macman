@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """Start, stop and manage virtual machines.
 
-This is a wrapper around Vagrant.
+This is a wrapper around Vagrant, but API could support multiple
+implementations.
 
 """
 from contextlib import contextmanager
@@ -82,12 +83,6 @@ Where:
         print "Registered virtual machines:"
         for vm_name in vm_list:
             print "* %s" % vm_name
-    elif action == 'download':
-        if vm and not vm in vm_list:
-            vm_dir = os.path.join(settings.VM_DIR, vm)
-            os.makedirs(vm_dir)
-        manager = VMManager(vm)
-        manager.download()
     else:
         if vm == 'all':
             vm_targets = vm_list
@@ -121,10 +116,24 @@ Where:
 
 class VMManager(object):
     """Implementation of manager class for one VM."""
-    def __init__(self, name, directory=''):
+    def __init__(self, name, directory='', settings={}):
         self.name = name
         self.directory = directory
-        #self.base_box = settings.get(self.name, 'base_box')
+        self.settings = settings
+
+    @property
+    def base_box(self):
+        """Return absolute path to base box file."""
+        base_box_dir = os.path.dirname(self.get_vm_dir())
+        url = self.settings['url']
+        if url.startswith('http://') or url.startswith('https://'):
+            from urlparse import urlparse
+            result = urlparse(url)
+            filename = result[2].split('/')[-1]
+        elif url.startswith('ssh://'):
+            url = url[6:]  # Remove the 'ssh://' prefix.
+            filename = url.split('/')[-1]
+        return os.path.join(base_box_dir, filename)
 
     def get_vm_dir(self):
         return self.directory
@@ -132,9 +141,13 @@ class VMManager(object):
     def start(self):
         """Start VM by name."""
         if not self.is_configured():
-            if not self.is_downloaded():
-                self.download()
             self.configure()
+        if not self.is_downloaded():
+            self.download()
+        process = execute('vagrant box list')
+        vagrant_box_list = process.stdout.read().strip().split('\n')
+        if not self.name in vagrant_box_list:
+            execute('vagrant box add %s %s' % (self.name, self.base_box))
         with chdir(self.get_vm_dir()):
             execute('vagrant up')
 
@@ -143,11 +156,12 @@ class VMManager(object):
         with chdir(self.get_vm_dir()):
             execute('vagrant halt')
 
-    def get_vagrantfile_path(self):
-        return os.path.join(settings.VM_DIR, self.name, 'Vagrantfile')
+    @property
+    def vagrantfile(self):
+        return os.path.join(self.get_vm_dir(), 'Vagrantfile')
 
     def is_configured(self):
-        return os.path.exists(self.get_vagrantfile_path())
+        return os.path.exists(self.vagrantfile)
 
     def configure(self, **configuration):
         """Generate Vagrantfile for VM."""
@@ -158,33 +172,33 @@ class VMManager(object):
                                 'templates',
                                 'Vagrantfile')
         # File output.
-        vagrantfile = os.path.join(self.get_vm_dir(), 'Vagrantfile')
+        vagrantfile = self.vagrantfile
         # Context.
         context = configuration
         context.update(self.settings)
-        context['box_name'] = self.name
-        context['box_directory'] = self.get_vm_dir()
+        context['name'] = self.name
+        context['directory'] = self.get_vm_dir()
         generator(template, vagrantfile, context)
 
-    def reconfigure(self):
-        """Re-generate Vagrantfile for VM."""
-        if settings.VM_RESET_VAGRANT_CMD:
-            cmds = settings.VM_RESET_VAGRANT_CMD(self.name, self.base_box,
-                                                 self.get_vagrantfile_path())
-            for cmd in cmds:
-                execute(cmd)
-        else:
-            self.configure()
-
     def is_downloaded(self):
-        return os.path.exists(os.path.join(settings.VM_DIR, self.base_box))
+        return os.path.exists(self.base_box)
 
     def download(self):
         """Download VM base box."""
-        output_dir = settings.VM_DIR
+        base_box = self.base_box
+        output_dir = os.path.dirname(base_box)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-        execute('rsync --progress %s %s' % (settings.RSYNC_URL, output_dir))
+        url = self.settings['url']
+        if url.startswith('http://') or url.startswith('https://'):
+            command = 'wget -O %s "%s"' % (base_box, url)
+        elif url.startswith('ssh://'):
+            url = url[6:]  # Remove the 'ssh://' prefix.
+            command = 'rsync --progress %s %s' % (url, base_box)
+        else:
+            raise settings.ConfigurationError('Unsupported download URL %s'
+                                              % url)
+        execute(command)
 
     def delete(self):
         """Delete VM by name."""
@@ -203,7 +217,8 @@ class VMManager(object):
             execute('vagrant reload')
 
 
-def execute(command, data={}):
+def execute(command, data={}, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE):
     """Execute a shell command.
 
     Command is a string ; data a dictionnary where values are supposed to be
@@ -220,7 +235,13 @@ def execute(command, data={}):
     if data:
         command = command % data
     print "Executing %s" % command
-    return subprocess.call(command, shell=True)
+    popen = subprocess.Popen(command,
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             shell=True)
+    popen.wait()
+    return popen
 
 
 @contextmanager

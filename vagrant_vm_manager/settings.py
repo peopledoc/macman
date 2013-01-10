@@ -141,6 +141,8 @@ class Settings(object):
             'ram': 512,
             'vram': '16',
             'ip': '34.34.34.10',
+            'url': 'http://files.vagrantup.com/lucid64.box',
+            'boot_mode': 'headless',
         }
         """Default options for VMs."""
 
