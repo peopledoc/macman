@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Start, stop and manage virtual machines for PostBox's DEV environment.
+"""Start, stop and manage virtual machines.
 
 This is a wrapper around Vagrant.
 

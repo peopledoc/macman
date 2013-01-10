@@ -2,7 +2,12 @@
 Vagrant VM Manager
 ##################
 
-A thin layer to manage your vagrant virtual machine.
+A thin wrapper around Vagrant to manage several virtual machines from one
+place.
+
+This script has been created to manage all project-related VMs from project's
+root folder.
+
 
 USAGE
 =====
@@ -13,6 +18,7 @@ USAGE
     $ vm download
     $ vm start my_vm
     $ vm stop my_vm
+
 
 COMMANDS
 ========

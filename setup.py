@@ -70,7 +70,7 @@ entry_points = {
 if __name__ == '__main__':  # ``import setup`` doesn't trigger setup().
     setup(name=name,
           version=version,
-          description="""Generate code for use in PostBox project.""",
+          description="""Manage multiple VMs from one place.""",
           long_description=readme,
           classifiers=['Programming Language :: Python',
                        'License :: OSI Approved :: BSD License',
