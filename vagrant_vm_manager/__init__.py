@@ -144,7 +144,7 @@ class VMManager(object):
             self.configure()
         if not self.is_downloaded():
             self.download()
-        process = execute('vagrant box list')
+        process = execute('vagrant box list', stdout=subprocess.PIPE)
         vagrant_box_list = process.stdout.read().strip().split('\n')
         if not self.name in vagrant_box_list:
             execute('vagrant box add %s %s' % (self.name, self.base_box))
@@ -217,8 +217,7 @@ class VMManager(object):
             execute('vagrant reload')
 
 
-def execute(command, data={}, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE):
+def execute(command, data={}, stdin=None, stdout=None, stderr=None):
     """Execute a shell command.
 
     Command is a string ; data a dictionnary where values are supposed to be
@@ -236,9 +235,7 @@ def execute(command, data={}, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
         command = command % data
     print "Executing %s" % command
     popen = subprocess.Popen(command,
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE,
+                             stdin=stdin, stdout=stdout, stderr=stderr,
                              shell=True)
     popen.wait()
     return popen
