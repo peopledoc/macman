@@ -6,28 +6,65 @@ A thin wrapper around Vagrant to manage several virtual machines from one
 place.
 
 This script has been created to manage all project-related VMs from project's
-root folder.
+root folder, because a development environment is not always made of a single
+machine.
+
+Key features:
+
+* wrapper over Vagrant.
+
+* simple configuration file.
+
+* generation of Vagrantfiles from templates: focus on few important settings
+  (such as cpus, ram or IP adress) and share the tricky things with your team
+  as templates.
+
+* operate on several VMs at once (start, stop...)
 
 
-USAGE
-=====
+Sample usage
+============
 
- 1. Configure the settings.py file
- 2. Use vm script :
+.. code-block:: sh
 
-    $ vm download
-    $ vm start my_vm
-    $ vm stop my_vm
+   # Let's work in a sandbox...
+   virtualenv demo  
+   cd demo/
+   source bin/activate
+   # Install.
+   pip install -e git+git@github.com:novagile/vagrant_vm_manager.git#egg=vagrant_vm_manager
 
+   # Register a new box.
+   vm register helloworld
 
+   # Configure the VM.
+   vm configure helloworld cpus=2 ram=256
+   vm configure helloworld ip=10.0.0.10
+   # Have a look at generated configuration.
+   cat etc/vagrant_vm_manager.cfg
+   # And have a look at generated Vagrantfile.
+   cat var/vm/helloworld/Vagrantfile
+
+   # Let's use the VM.
+   vm start helloworld
+   vm ssh helloworld
+   vm stop helloworld
+
+   # You can manage several VMs!
+   vm register goodbye
+   vm configure goodbye ram=192 ip=10.0.0.11
+   vm start all
+   vm stop all
+
+    
 COMMANDS
 ========
 
- - start vm_name
- - stop vm_name
- - download
- - configure vm_name
- - reconfigure vm_name
- - delete vm_name
- - ssh vm_name
- - restart vm_name
+- register vm_name
+- start vm_name
+- stop vm_name
+- download vm_name
+- configure vm_name [[OPTION=VALUE] [OPTION=VALUE] ...]
+- delete vm_name
+- ssh vm_name
+- restart vm_name
