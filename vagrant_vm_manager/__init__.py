@@ -12,7 +12,6 @@ import sys
 
 import settings
 
-root_dir = os.path.abspath(os.getcwd())
 
 def get_vm_list():
     """Scan filesystem and return list of available VMs."""
@@ -20,7 +19,7 @@ def get_vm_list():
     vm_dir = settings.VM_DIR
     if os.path.isdir(vm_dir):
         items = os.listdir(vm_dir)
-        vm_list = [os.path.basename(item) for item in items \
+        vm_list = [os.path.basename(item) for item in items
                    if os.path.isdir(os.path.join(vm_dir, item))]
     return vm_list
 
@@ -67,11 +66,10 @@ Where:
             func()
     else:
         if vm and not vm in vm_list:
-            vm_dir = os.path.join(vm_root, 'vm')
+            vm_dir = os.path.join(settings.VM_DIR, vm)
             os.makedirs(vm_dir)
         manager = VMManager(vm)
         manager.download()
-        
 
 
 class VMManager(object):
