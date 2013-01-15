@@ -19,6 +19,9 @@ Vagrant::Config.run do |config|
   # Boot with a GUI so you can see the screen. (Default is headless)
   config.vm.boot_mode = :%(boot_mode)s
 
+  # SSH forwarding.
+  config.ssh.forward_agent = :%(ssh_forward_agent)s
+
   # Assign this VM to a host-only network IP, allowing you to access it
   # via the IP. Host-only networks can talk to the host machine as well as
   # any other machines on the same network, but cannot be accessed (through

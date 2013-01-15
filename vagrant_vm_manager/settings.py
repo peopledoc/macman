@@ -143,6 +143,7 @@ class Settings(object):
             'ip': '34.34.34.10',
             'url': 'http://files.vagrantup.com/lucid64.box',
             'boot_mode': 'headless',
+            'ssh_forward_agent': 'true',
         }
         """Default options for VMs."""
 
