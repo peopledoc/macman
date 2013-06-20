@@ -38,7 +38,7 @@ if __name__ == '__main__':  # Don't run setup() when we import this module.
           keywords=' '.join(KEYWORDS),
           author='Benoît Bryon',
           author_email='benoit@marmelune.net',
-          url='https://github.com/novagile/vagrant_vm_manager',
+          url='https://github.com/novagile/macman',
           license='BSD',
           packages=PACKAGES,
           include_package_data=True,

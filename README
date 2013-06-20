@@ -71,7 +71,7 @@ With pip:
 
 .. code:: sh
 
-   pip install -e git+git@github.com:novagile/vagrant_vm_manager.git#egg=macman
+   pip install -e git+git@github.com:novagile/macman.git#egg=macman
 
 
 ********
@@ -92,8 +92,8 @@ Commands
 Ressources
 **********
 
-* Documentation: https://github.com/novagile/vagrant_vm_manager/
+* Documentation: https://github.com/novagile/macman/
 * PyPI page: not released yet
-* Code repository: https://github.com/novagile/vagrant_vm_manager/
-* Bugtracker: https://github.com/novagile/vagrant_vm_manager/issues
+* Code repository: https://github.com/novagile/macman/
+* Bugtracker: https://github.com/novagile/macman/issues
 * Continuous integration: not setup yet
