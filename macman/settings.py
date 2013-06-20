@@ -147,7 +147,7 @@ class Settings(object):
         }
         """Default options for VMs."""
 
-        self.directory = join(abspath(getcwd()), 'var', 'vm')
+        self.directory = join(abspath(getcwd()), 'var', 'macman')
         """Path to directory where to store VMs (i.e. Vagrantfiles)."""
 
     def get(self, vm, option):
