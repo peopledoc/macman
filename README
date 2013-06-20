@@ -78,15 +78,25 @@ With pip:
 Commands
 ********
 
-- register MACHINE
-- start MACHINE
-- stop MACHINE
-- download MACHINE
-- configure MACHINE [[OPTION=VALUE] [OPTION=VALUE] ...]
-- delete MACHINE
-- ssh MACHINE
-- restart MACHINE
+* register MACHINE
+* start MACHINE
+* stop MACHINE
+* download MACHINE
+* configure MACHINE [[OPTION=VALUE] [OPTION=VALUE] ...]
 
+  Where available options are:
+
+  * ram: defaults to '512'.
+  * vram: defaults to '16'.
+  * cpus: defaults to '1'.
+  * ip: defaults to '34.34.34.10'. Do not use '1' as last number because
+    Vagrant will use it for your host.
+  * gui: 'true' or defaults to 'nil'.
+  * ssh_forward_agent: 'false' or defaults to 'true'.
+
+* delete MACHINE
+* ssh MACHINE
+* restart MACHINE
 
 **********
 Ressources
