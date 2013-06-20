@@ -13,7 +13,7 @@ def read_relative_file(filename):
         return f.read().strip()
 
 
-NAME = 'vagrant_vm_manager'
+NAME = 'macman'
 DESCRIPTION = "Manage multiple VMs from one place."
 README = read_relative_file('README')
 VERSION = read_relative_file('VERSION')
@@ -21,11 +21,8 @@ KEYWORDS = ['VirtualBox', 'Vagrant']
 PACKAGES = [NAME]
 REQUIRES = ['setuptools']
 ENTRY_POINTS = {
-    'paste.paster_create_template': [
-        'debian_preseed = debisogen.pastescript:DebianPreseedTemplate',
-    ],
     'console_scripts': [
-        'vm = %s:main' % NAME,
+        'macman = %s:main' % NAME,
     ]
 }
 
@@ -41,7 +38,7 @@ if __name__ == '__main__':  # Don't run setup() when we import this module.
           keywords=' '.join(KEYWORDS),
           author='Benoît Bryon',
           author_email='benoit@marmelune.net',
-          url='https://github.com/novagile/%s' % NAME,
+          url='https://github.com/novagile/vagrant_vm_manager',
           license='BSD',
           packages=PACKAGES,
           include_package_data=True,

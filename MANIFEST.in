@@ -1,4 +1,4 @@
-recursive-include vagrant_vm_manager *
+recursive-include macman *
 global-exclude *.pyc .*.swp
 include *.txt
 include AUTHORS CHANGELOG INSTALL LICENSE README VERSION
