@@ -22,8 +22,9 @@ Key features:
 * operate on several VMs at once (start, stop...)
 
 
-Sample usage
-============
+*****
+Usage
+*****
 
 .. code-block:: sh
 
@@ -57,8 +58,9 @@ Sample usage
    vm stop all
 
     
-COMMANDS
-========
+********
+Commands
+********
 
 - register vm_name
 - start vm_name
@@ -68,3 +70,14 @@ COMMANDS
 - delete vm_name
 - ssh vm_name
 - restart vm_name
+
+
+**********
+Ressources
+**********
+
+* Documentation: https://github.com/benoitbryon/vagrantboxbuilder/
+* PyPI page: not released yet
+* Code repository: https://github.com/benoitbryon/vagrantboxbuilder
+* Bugtracker: https://github.com/benoitbryon/vagrantboxbuilder/issues
+* Continuous integration: not setup yet

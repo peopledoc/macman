@@ -1,5 +1,17 @@
-*.pyc
-*~
+# Local binaries.
+/bin/
+
+# Libraries.
+/lib/
+
+# Data files.
 /var/
+
+# Python files.
+*.pyc
+*.pyo
 *.egg-info
-*.swp
+
+# Editors' temporary buffers.
+.*.swp
+*~

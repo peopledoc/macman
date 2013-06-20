@@ -133,6 +133,8 @@ class VMManager(object):
         elif url.startswith('ssh://'):
             url = url[6:]  # Remove the 'ssh://' prefix.
             filename = url.split('/')[-1]
+        else:  # Local filename.
+            filename = os.path.basename(url)
         return os.path.join(base_box_dir, filename)
 
     def get_vm_dir(self):
@@ -196,8 +198,9 @@ class VMManager(object):
             url = url[6:]  # Remove the 'ssh://' prefix.
             command = 'rsync --progress %s %s' % (url, base_box)
         else:
-            raise settings.ConfigurationError('Unsupported download URL %s'
-                                              % url)
+            if not os.path.isfile(url):
+                raise settings.ConfigurationError('No file found at %s' % url)
+            command = 'cp %s %s' % (url, base_box)
         execute(command)
 
     def delete(self):

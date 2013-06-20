@@ -1,89 +1,50 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Python packaging."""
-from os.path import abspath, dirname, join
+import os
+
 from setuptools import setup
 
 
 def read_relative_file(filename):
     """Returns contents of the given file, which path is supposed relative
     to this module."""
-    with open(join(dirname(abspath(__file__)), filename)) as f:
-        return f.read()
+    with open(os.path.join(os.path.dirname(__file__), filename)) as f:
+        return f.read().strip()
 
 
-def packages(project_name):
-    """Return list of packages distributed by project based on its name.
-
-    >>> packages('foo')
-    ['foo']
-    >>> packages('foo.bar')
-    ['foo', 'foo.bar']
-    >>> packages('foo.bar.baz')
-    ['foo', 'foo.bar', 'foo.bar.baz']
-    >>> packages('FooBar')
-    ['foobar']
-
-    Implements "Use a single name" convention described in :pep:`423`.
-
-    """
-    name = str(project_name).lower()
-    if '.' in name:  # Using namespace packages.
-        parts = name.split('.')
-        return ['.'.join(parts[0:i]) for i in range(1, len(parts) + 1)]
-    else:  # One root package or module.
-        return [name]
-
-
-def namespace_packages(project_name):
-    """Return list of namespace packages distributed in this project, based on
-    project name.
-
-    >>> namespace_packages('foo')
-    []
-    >>> namespace_packages('foo.bar')
-    ['foo']
-    >>> namespace_packages('foo.bar.baz')
-    ['foo', 'foo.bar']
-    >>> namespace_packages('Foo.BaR.BAZ') == namespace_packages('foo.bar.baz')
-    True
-
-    Implements "Use a single name" convention described in :pep:`423`.
-
-    """
-    package_list = packages(project_name)
-    package_list.pop()  # Ignore last element.
-    # Remaining packages are supposed to be namespace packages.
-    return package_list
-
-
-name = 'vagrant_vm_manager'
-version = read_relative_file('VERSION').strip()
-readme = read_relative_file('README')
-requirements = ['setuptools']
-entry_points = {
+NAME = 'vagrant_vm_manager'
+DESCRIPTION = "Manage multiple VMs from one place."
+README = read_relative_file('README')
+VERSION = read_relative_file('VERSION')
+KEYWORDS = ['VirtualBox', 'Vagrant']
+PACKAGES = [NAME]
+REQUIRES = ['setuptools']
+ENTRY_POINTS = {
+    'paste.paster_create_template': [
+        'debian_preseed = debisogen.pastescript:DebianPreseedTemplate',
+    ],
     'console_scripts': [
-        'vm = vagrant_vm_manager:main',
+        'vm = %s:main' % NAME,
     ]
 }
 
 
-if __name__ == '__main__':  # ``import setup`` doesn't trigger setup().
-    setup(name=name,
-          version=version,
-          description="""Manage multiple VMs from one place.""",
-          long_description=readme,
-          classifiers=['Programming Language :: Python',
-                       'License :: OSI Approved :: BSD License',
-                       'Development Status :: 3 - Alpha'
-                       ],
-          keywords='',
-          author='Novapost',
-          author_email='rd@novapost.fr',
-          url='https://github.com/novagile/%s' % name,
+if __name__ == '__main__':  # Don't run setup() when we import this module.
+    setup(name=NAME,
+          version=VERSION,
+          description=DESCRIPTION,
+          long_description=README,
+          classifiers=['License :: OSI Approved :: BSD License',
+                       'Development Status :: 3 - Alpha',
+                       'Programming Language :: Python :: 2.7'],
+          keywords=' '.join(KEYWORDS),
+          author='Benoît Bryon',
+          author_email='benoit@marmelune.net',
+          url='https://github.com/novagile/%s' % NAME,
           license='BSD',
-          packages=packages(name),
-          namespace_packages=namespace_packages(name),
+          packages=PACKAGES,
           include_package_data=True,
           zip_safe=False,
-          install_requires=requirements,
-          entry_points=entry_points)
+          install_requires=REQUIRES,
+          entry_points=ENTRY_POINTS)

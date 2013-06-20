@@ -1,2 +1,4 @@
-global-exclude *.pyc
-include VERSION README CHANGELOG LICENSE INSTALL AUTHORS
+recursive-include vagrant_vm_manager *
+global-exclude *.pyc .*.swp
+include *.txt
+include AUTHORS CHANGELOG INSTALL LICENSE README VERSION
