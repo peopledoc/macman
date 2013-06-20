@@ -1,83 +1,99 @@
-##################
-Vagrant VM Manager
-##################
+######
+macman
+######
 
-A thin wrapper around Vagrant to manage several virtual machines from one
-place.
+``macman`` is a project-centric high-level machine manager.
 
-This script has been created to manage all project-related VMs from project's
-root folder, because a development environment is not always made of a single
-machine.
+.. warning::
 
-Key features:
+   This project is experimental.
 
-* wrapper over Vagrant.
+.. note::
 
-* simple configuration file.
-
-* generation of Vagrantfiles from templates: focus on few important settings
-  (such as cpus, ram or IP adress) and share the tricky things with your team
-  as templates.
-
-* operate on several VMs at once (start, stop...)
+   ``macman`` was created as a wrapper around Vagrant, in order to manage
+   several machines at once, and not only using VirtualBox. In recent versions
+   of Vagrant support multiple machines, and VirtualBox is no longer the only
+   supported machine backend. So ``macman`` may be discontinued.
 
 
-*****
-Usage
-*****
+*******
+Example
+*******
 
-.. code-block:: sh
-
-   # Let's work in a sandbox...
-   virtualenv demo  
-   cd demo/
-   source bin/activate
-   # Install.
-   pip install -e git+git@github.com:novagile/vagrant_vm_manager.git#egg=vagrant_vm_manager
+.. code:: sh
 
    # Register a new box.
-   vm register helloworld
+   macman register helloworld
 
    # Configure the VM.
-   vm configure helloworld cpus=2 ram=256
-   vm configure helloworld ip=10.0.0.10
+   macman configure helloworld cpus=2 ram=256
+   macman configure helloworld ip=10.0.0.10
    # Have a look at generated configuration.
-   cat etc/vagrant_vm_manager.cfg
-   # And have a look at generated Vagrantfile.
+   cat etc/macman.cfg
+   # And have a look at generated Vagrantfile (Vagrant is the default).
    cat var/vm/helloworld/Vagrantfile
 
    # Let's use the VM.
-   vm start helloworld
-   vm ssh helloworld
-   vm stop helloworld
+   macman start helloworld
+   macman ssh helloworld
+   macman stop helloworld
 
    # You can manage several VMs!
-   vm register goodbye
-   vm configure goodbye ram=192 ip=10.0.0.11
-   vm start all
-   vm stop all
+   macman register goodbye
+   macman configure goodbye ram=192 ip=10.0.0.11
+   macman start all
+   macman stop all
 
-    
+
+********
+Abstract
+********
+
+This script has been created to manage all project-related machines from one
+place, the project's root folder.
+
+Key features:
+
+* ``macman`` command focuses on most important commands.
+* Configuration file if simple.
+* Detailed configuration (i.e. Vagrantfile) is generated with templates.
+* Operate on several VMs at once (start, stop...)
+
+You focus on few important settings such as cpus, ram or IP adress, and
+delegate the tricky things to scripts or templates) you share with your team.
+
+
+************
+Installation
+************
+
+With pip:
+
+.. code:: sh
+
+   pip install -e git+git@github.com:novagile/vagrant_vm_manager.git#egg=macman
+
+
 ********
 Commands
 ********
 
-- register vm_name
-- start vm_name
-- stop vm_name
-- download vm_name
-- configure vm_name [[OPTION=VALUE] [OPTION=VALUE] ...]
-- delete vm_name
-- ssh vm_name
-- restart vm_name
+- register MACHINE
+- start MACHINE
+- stop MACHINE
+- download MACHINE
+- configure MACHINE [[OPTION=VALUE] [OPTION=VALUE] ...]
+- delete MACHINE
+- ssh MACHINE
+- restart MACHINE
 
 
 **********
 Ressources
 **********
 
-* Documentation: https://github.com/benoitbryon/vagrantboxbuilder/
+* Documentation: https://github.com/novagile/vagrant_vm_manager/
 * PyPI page: not released yet
-* Code repository: https://github.com/benoitbryon/vagrantboxbuilder
-* Bugtracker: https://github.com/benoitbryon/vagrantboxbuilder/issues
+* Code repository: https://github.com/novagile/vagrant_vm_manager/
+* Bugtracker: https://github.com/novagile/vagrant_vm_manager/issues
 * Continuous integration: not setup yet

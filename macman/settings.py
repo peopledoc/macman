@@ -17,10 +17,10 @@ def find_config_file(origin_path):
 
     The following patterns return positive match, in order:
 
-    * "vagrant_vm_manager.cfg" in ``origin_path``
-    * "etc/vagrant_vm_manager.cfg" in ``origin_path``
+    * "macman.cfg" in ``origin_path``
+    * "etc/macman.cfg" in ``origin_path``
     * patterns above in ``origin_path``'s parent folder, recursively. It means
-      it could fallback to "/etc/vagrant_vm_manager.cfg"
+      it could fallback to "/etc/macman.cfg"
 
     Raises ConfigurationError is no file is found.
 
@@ -28,8 +28,8 @@ def find_config_file(origin_path):
     if isfile(origin_path):
         origin_path = dirname(origin_path)
     origin_path = abspath(origin_path)
-    patterns = ['vagrant_vm_manager.cfg',
-                join('etc', 'vagrant_vm_manager.cfg')]
+    patterns = ['macman.cfg',
+                join('etc', 'macman.cfg')]
     for pattern in patterns:
         config_file = join(origin_path, pattern)
         if isfile(config_file):
@@ -44,7 +44,7 @@ def read_config_file(filename):
     parser = ConfigParser()
     parser.read(filename)
     settings = Settings()
-    core_section = 'vagrant_vm_manager'
+    core_section = 'macman'
     default_section = 'default'
     # Handle core configuration.
     if parser.has_section(core_section):
@@ -70,7 +70,7 @@ def write_config_file(settings, file_obj):
     """Save settings into file."""
     default_settings = Settings()
     parser = ConfigParser()
-    core_section = 'vagrant_vm_manager'
+    core_section = 'macman'
     default_section = 'default'
     # Internal options.
     # Order internal options alphabetically so that output is repeatable and
