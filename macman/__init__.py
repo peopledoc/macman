@@ -11,8 +11,8 @@ import os
 import subprocess
 import sys
 
-from vagrant_vm_manager import settings
-from vagrant_vm_manager.templates import generate_vagrantfile
+from macman import settings
+from macman.templates import generate_vagrantfile
 
 
 def main():
@@ -22,7 +22,7 @@ def main():
         config_filename = settings.find_config_file(os.getcwd())
     except settings.ConfigurationError:  # No file found.
         config_filename = os.path.join(os.path.abspath(os.getcwd()),
-                                       'etc', 'vagrant_vm_manager.cfg')
+                                       'etc', 'macman.cfg')
         print "No configuration file found. Creating a new one at %s" \
               % config_filename
         if not os.path.exists(os.path.dirname(config_filename)):
